@@ -10,20 +10,63 @@ import os
 
 def preprocess_data(df: pd.DataFrame, target: str) -> pd.DataFrame:
 
+
     # Drop missing values
     df_no_missing = handle_missing_values(df)
 
     # One hot encoding for categorical variables
     df_encoded = one_hot_encode(df_no_missing)
+   
+    # Standardizes dataframe
+    df_standardized = standardize_df(df_encoded)
 
     # Handle class imbalance
-    df_balanced = handle_imbalance_on_target(df_encoded, target)
+    df_balanced = handle_imbalance_on_target(df_standardized, target)
 
     # Feature scaling
     df_scaled = handle_scaling(df_balanced, target)
 
     # Return data
     return df_scaled
+
+
+def standardize_df(df):
+    """
+    Splits column names and retains the first name in lowercase
+
+    Args
+    ----
+    df: Dataframe
+        The data to be standardized
+
+    Return
+    ------
+        Returns standardized dataframe
+    """
+    # Create a copy of the dataframe to avoid modifying the original
+    standardized_df = df.copy()
+
+    # Get the column names
+    columns = standardized_df.columns
+
+    # Create a dictionary to map old column names to new ones
+    column_mapping = {}
+
+    # Process each column name
+    for col in columns:
+        # Split by space only
+        split_col = col.split(' ')
+
+        # Take the first part and convert to lowercase
+        new_col = split_col[0].lower()
+
+        # Add to mapping dictionary
+        column_mapping[col] = new_col
+
+    # Rename the columns
+    standardized_df = standardized_df.rename(columns=column_mapping)
+
+    return standardized_df
 
 
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
@@ -196,9 +239,9 @@ def handle_scaling(
     # Proceed only if there are numerical columns to scale
     if not numerical_cols.empty:
         # Check if the pickled scaler file exists
-        if os.path.exists('../models/scaler.pkl'):
+        if os.path.exists('./models/scaler.pkl'):
             # Load the existing scaler from the pickle file
-            with open('../models/scaler.pkl', 'rb') as f:
+            with open('./models/scaler.pkl', 'rb') as f:
                 scaler = pickle.load(f)
             # Use the loaded scaler to transform the numerical columns
             scaled_data = scaler.transform(df_without_target[numerical_cols])
@@ -268,17 +311,16 @@ def test_val_train_split(df: pd.DataFrame, target: str) -> tuple:
 
     return X_train, y_train, X_test, y_test, X_val, y_val
 
-
 def offset_target_column(y: pd.Series) -> pd.Series:
     """
     Offset target column values to start from 0 instead of 1 for use with 
     sparse categorical crossentropy.
-    
+
     Parameters
     ----------
     y : pd.Series
         Target column with values starting from 1 (e.g., 1, 2, 3)
-        
+
     Returns
     -------
     pd.Series
@@ -286,18 +328,98 @@ def offset_target_column(y: pd.Series) -> pd.Series:
     """
     # Create a copy to avoid modifying the original
     y_offset = y.copy()
-    
+
     # Get the minimum value
     min_val = y.min()
-    
+
     # Offset by the minimum value to make it zero-indexed
     y_offset = y - min_val
-    
+
     # Log the transformation
-    print(f"Target values transformed from {y.min()}-{y.max()} to {y_offset.min()}-{y_offset.max()}")
-    
+    print(
+        f"Target values transformed from {y.min()}-{y.max()} to {y_offset.min()}-{y_offset.max()}")
+
     # Create a mapping dictionary for reference
-    value_mapping = {orig: new for orig, new in zip(sorted(y.unique()), sorted(y_offset.unique()))}
+    value_mapping = {orig: new for orig, new in zip(
+        sorted(y.unique()), sorted(y_offset.unique()))}
     print(f"Value mapping: {value_mapping}")
-    
+
     return y_offset
+
+def build_categorical_mapping(df):
+    """
+    Builds a dictionary mapping of categorical (string) columns to their unique values.
+    
+    Args:
+        df: pandas DataFrame
+            The dataset to analyze for categorical columns
+    
+    Returns:
+        dict: A mapping of categorical column names to lists of their unique values
+    """
+    # Initialize an empty dictionary to store our mappings
+    categorical_mapping = {}
+    
+    # Iterate through each column in the dataframe
+    for column in df.columns:
+        # Check if this column contains string data
+        # We'll consider a column categorical if it has string (object) dtype
+        # or if it's a categorical dtype
+        if df[column].dtype == 'object' or pd.api.types.is_categorical_dtype(df[column]):
+            # Get all unique values for this column and convert to a list
+            unique_values = df[column].unique().tolist()
+            
+            # Filter out any non-string values (like NaN) just to be safe
+            unique_values = [value for value in unique_values 
+                             if isinstance(value, str)]
+            
+            # Add this column and its unique values to our mapping
+            if unique_values:  # Only add if there are actual string values
+                categorical_mapping[column] = unique_values
+    
+    return categorical_mapping
+
+
+def add_one_hot_encoded_columns(
+    X,
+    categorical_columns={'gender': ['male', 'female'],
+                         'workout_type': ['cardio', 'strength', 'hiit', 'yoga']}
+):
+    """
+    Adds missing one-hot encoded columns with zero values to a single data point.
+    Only adds columns that don't already exist.
+
+    Args:
+        X: dict or pandas Series
+            The single data point to be processed
+        categorical_columns: dict
+            Dictionary mapping column names to their possible values
+            Example: {'gender': ['male', 'female'], 'workout_type': ['cardio', 'strength', 'hiit']}
+
+    Returns:
+        dict or pandas Series with any missing one-hot encoded columns added and filled with zeros
+    """
+    import pandas as pd
+
+    # Convert to pandas Series if it's a dictionary
+    is_dict = isinstance(X, dict)
+    if is_dict:
+        X = pd.Series(X)
+
+    # Make a copy to avoid modifying the original
+    X_processed = X.copy()
+
+    # For each categorical column and its possible values
+    for column, values in categorical_columns.items():
+        for value in values:
+            # Create the column name using the pattern column_value (in lowercase)
+            column_name = f"{column.lower()}_{value.lower()}"
+            
+            # If the column doesn't exist, add it with a zero value
+            if column_name not in X_processed:
+                X_processed[column_name] = False
+
+    # Return in the same format as the input
+    if is_dict:
+        return X_processed.to_dict()
+    return X_processed

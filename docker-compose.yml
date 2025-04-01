@@ -1,0 +1,20 @@
+services:
+  api:
+    build:
+      context: ./repo/
+      dockerfile: Dockerfile
+    container_name: gym-classification-api
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+          ignore:
+            - .git
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./repo/models:/models
+      - ./repo/data:/data
+    environment:
+      - TF_CPP_MIN_LOG_LEVEL=2
