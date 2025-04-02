@@ -18,3 +18,4 @@ services:
       - ./repo/data:/data
     environment:
       - TF_CPP_MIN_LOG_LEVEL=2
+      - CORS_ORIGINS=http://localhost:3000
