@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: ./repo/
+      context: ./
       dockerfile: Dockerfile
     container_name: gym-classification-api
     develop:
@@ -14,8 +14,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./repo/models:/models
-      - ./repo/data:/data
+      - ./models:/models
+      - ./data:/data
     environment:
       - TF_CPP_MIN_LOG_LEVEL=2
       - CORS_ORIGINS=http://localhost:3000
