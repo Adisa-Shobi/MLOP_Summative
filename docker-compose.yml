@@ -19,3 +19,15 @@ services:
     environment:
       - TF_CPP_MIN_LOG_LEVEL=2
       - CORS_ORIGINS=http://localhost:3000
+
+  locust:
+    image: locustio/locust:2.24.1
+    ports:
+      - "8089:8089" # Web interface
+      - "5557:5557" # Master port
+      - "5558:5558" # Worker port
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host=https://mlop-summative-wh2a.onrender.com
+    depends_on:
+      - api
