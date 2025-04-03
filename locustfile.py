@@ -46,7 +46,12 @@ class GymUser(HttpUser):
         """Test the training data endpoint"""
         self.client.get("/v1/training-data", headers=self.headers)
 
+    @task(2)
+    def get_visualization_data(self):
+        """Test the visualization data endpoint"""
+        self.client.get("/v1/visualization-data", headers=self.headers)
+
     @task(1)
-    def health_check(self):
-        """Test the health check endpoint"""
-        self.client.get("/v1/")
+    def home(self):
+        """Test the home endpoint"""
+        self.client.get("/v1/", headers=self.headers)

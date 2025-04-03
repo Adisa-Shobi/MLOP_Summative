@@ -142,6 +142,14 @@ The API provides the following endpoints:
 - **Description**: Delete all training files leaving only 1
 - **Response**: JSON with deletion status
 
+#### Visualization Data
+- **URL**: `/v1/visualization-data`
+- **Method**: `GET`
+- **Description**: Get data for visualizations
+- **Query Parameters**: 
+  - `filename` (optional): Specific CSV file to visualize. If not provided, uses default dataset
+- **Response**: JSON with visualization data and source file information
+
 Example prediction request:
 ```bash
 curl --request POST \
