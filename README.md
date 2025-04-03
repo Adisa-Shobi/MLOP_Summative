@@ -29,6 +29,28 @@ The dataset used for this project is the [Gym Members Exercise Dataset](https://
 - Workout frequency
 - Experience level (target variable)
 
+## Load Testing with Locust
+
+1. Start the Locust service:
+   ```bash
+   docker-compose up locust
+   ```
+
+2. Access the Locust web interface at http://localhost:8089
+
+3. Configure the test:
+   - Number of users
+   - Spawn rate
+   - Host (default: https://mlop-summative-wh2a.onrender.com)
+
+4. Click "Start swarming" to begin the load test
+
+### Locust Test Results
+![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXfG9UduOHshI1QWsiFBCmE68CajijCfI8cFQRH5OI5Dq_24a4FWE513BN-KoDK540ASw-2tjRi-9ste7pmJDHcdNq6b9-IgJTta2xYm5RjGPPrgYtFz_0-kF97OhGFZN2gAhjK7?key=HxPGg6zACOJOE9PdY9ELAw)
+
+[Results](https://adisa-shobi.github.io/MLOP_Summative/)
+
+
 ## Setup Instructions
 
 ### Prerequisites
@@ -158,26 +180,6 @@ Example response:
 	"message": "Prediction completed successfully"
 }
 ```
-
-### Load Testing with Locust
-
-1. Start the Locust service:
-   ```bash
-   docker-compose up locust
-   ```
-
-2. Access the Locust web interface at http://localhost:8089
-
-3. Configure the test:
-   - Number of users
-   - Spawn rate
-   - Host (default: https://mlop-summative-wh2a.onrender.com)
-
-4. Click "Start swarming" to begin the load test
-
-### Locust Test Results
-
-[Results](./locust_result.html)
 
 ## Project Structure
 

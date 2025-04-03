@@ -1,11 +1,13 @@
+from src.utils import *
+from fastapi import APIRouter, Request, File, UploadFile, HTTPException
+from typing import Dict
+from src.api.model import XDatapoint
+from src.visualizations import visualization_data
+from src.prediction import predict
+from src.model import retrain_model, evaluate_model
 import sys
 import os
 sys.path.append(os.path.abspath('.'))
-from src.model import predict, retrain_model, evaluate_model
-from src.api.model import XDatapoint
-from typing import Dict
-from fastapi import APIRouter, Request, File, UploadFile, HTTPException
-from src.utils import *
 
 
 v1 = APIRouter(
@@ -175,6 +177,8 @@ async def retrain_endpoint(request: Request):
         }
 
 # Endpoint for fetching model evaluation
+
+
 @v1.get("/evaluate")
 async def evaluate_endpoint():
     """
@@ -184,10 +188,10 @@ async def evaluate_endpoint():
         evaluation = evaluate_model()
 
         return {
-                "status": "success",
-                "message": "Model evaluation completed successfully",
-                "details": evaluation
-            }
+            "status": "success",
+            "message": "Model evaluation completed successfully",
+            "details": evaluation
+        }
     except Exception as e:
         return {
             "status": "error",
@@ -213,6 +217,8 @@ async def get_training_data():
         raise HTTPException(status_code=500, detail=str(e))
 
 # Delete specific trining files
+
+
 @v1.delete("/training-data/{filename}")
 async def delete_training_file(filename: str):
     """
@@ -242,3 +248,65 @@ async def delete_all_training_files():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# Visualisation data
+# Endpoint to get visualization data
+
+
+@v1.get("/visualization-data")
+async def get_visualization_data(filename: str = None):
+    """
+    Endpoint to retrieve visualization data from a CSV file.
+
+    Args:
+        filename: Optional filename of a specific CSV to visualize.
+                 If not provided, uses the default dataset.
+
+    Returns:
+        JSON response with visualization data
+    """
+    try:
+        # Determine which file to use
+        csv_path = 'data/gym_members_exercise_tracking.csv'  # Default
+
+        if filename:
+            # If a specific file is requested, use the uploaded file path
+            csv_path = f"training_data/{filename}"
+
+            # Check if the requested file exists
+            if not os.path.exists(csv_path):
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"File not found: {filename}"
+                )
+
+        # Get visualization data
+        viz_data = visualization_data(csv_path)
+
+        return {
+            "status": "success",
+            "data": viz_data,
+            "message": "Visualization data retrieved successfully",
+            "source_file": os.path.basename(csv_path)
+        }
+
+    except FileNotFoundError as e:
+        # Handle file not found errors
+        raise HTTPException(
+            status_code=404,
+            detail=f"File not found: {str(e)}"
+        )
+
+    except ValueError as e:
+        # Handle validation errors
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid data format: {str(e)}"
+        )
+
+    except Exception as e:
+        # Handle unexpected errors
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving visualization data: {str(e)}"
+        )

@@ -1,9 +1,11 @@
+version: '3.8'
+
 services:
-  api:
+  api-dev:
     build:
       context: ./
       dockerfile: Dockerfile
-    container_name: gym-classification-api
+    container_name: gym-classification-api-dev
     develop:
       watch:
         - action: sync
@@ -11,6 +13,25 @@ services:
           target: /app/src
           ignore:
             - .git
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      # - ./src:/app/src  # Mount src for live changes
+      - ./models:/models
+      - ./data:/data
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - TF_CPP_MIN_LOG_LEVEL=2
+      - CORS_ORIGINS=http://localhost:3000
+      - ENVIRONMENT=development
+
+  api-prod:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: gym-classification-api-prod
+    restart: always
     ports:
       - "8000:8000"
     volumes:
@@ -19,6 +40,7 @@ services:
     environment:
       - TF_CPP_MIN_LOG_LEVEL=2
       - CORS_ORIGINS=http://localhost:3000
+      - ENVIRONMENT=production
 
   locust:
     image: locustio/locust:2.24.1
@@ -30,4 +52,4 @@ services:
       - ./:/mnt/locust
     command: -f /mnt/locust/locustfile.py --host=https://mlop-summative-wh2a.onrender.com
     depends_on:
-      - api
+      - api-prod  # Updated to depend on prod by default
