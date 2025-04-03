@@ -2,6 +2,12 @@
 
 A machine learning project that predicts gym members' experience levels based on their workout data and physical characteristics.
 
+## Web
+
+[Web Repo Link](https://github.com/Adisa-Shobi/MLOP_web)
+
+[Web Live Link](https://predict-visualize-train.onrender.com/)
+
 ## Project Description
 
 This project uses machine learning to classify gym members into different experience levels based on their workout data and physical characteristics. The model is trained on a dataset of gym members and can predict whether a member is a beginner, intermediate, or advanced based on various metrics such as age, gender, weight, height, heart rate data, workout type, and more.
@@ -200,6 +206,7 @@ Example response:
 │   ├── preprocessing.py   # Data preprocessing functions
 │   ├── model.py           # Model training and evaluation
 │   └── api.py             # FastAPI application
+│   ├── visualizations.py  # Derives trends fron selected dataset
 ├── locustfile.py          # Locust load testing configuration
 ├── docker-compose.yml     # Docker Compose configuration
 ├── locust_result.html     # Results fro Locust test
