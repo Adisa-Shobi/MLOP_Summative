@@ -2,6 +2,8 @@
 
 A machine learning project that predicts gym members' experience levels based on their workout data and physical characteristics.
 
+[Demo](https://drive.google.com/file/d/11g67eFlmdTKF9cFIrHZZYdh7Sn28jcBd/view?usp=sharing)
+
 ## Web
 
 [Web Repo Link](https://github.com/Adisa-Shobi/MLOP_web)
